@@ -8,4 +8,10 @@ layout:
 - go.kubebuilder.io/v4
 projectName: arc-cleaner
 repo: github.com/int128/arc-cleaner
+resources:
+- controller: true
+  domain: int128.github.io
+  group: arc-cleaner
+  kind: EphemeralRunner
+  version: v1
 version: "3"
