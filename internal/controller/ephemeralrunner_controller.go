@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 
+	arcv1alpha1 "github.com/actions/actions-runner-controller/apis/actions.github.com/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -31,23 +32,21 @@ type EphemeralRunnerReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=arc-cleaner.int128.github.io,resources=ephemeralrunners,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=arc-cleaner.int128.github.io,resources=ephemeralrunners/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=arc-cleaner.int128.github.io,resources=ephemeralrunners/finalizers,verbs=update
+// +kubebuilder:rbac:groups=actions.github.com,resources=ephemeralrunners,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=actions.github.com,resources=ephemeralrunners/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=actions.github.com,resources=ephemeralrunners/finalizers,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
+// +kubebuilder:rbac:groups=core,resources=pods/status,verbs=get
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the EphemeralRunner object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.21.0/pkg/reconcile
 func (r *EphemeralRunnerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = logf.FromContext(ctx)
+	_ = logf.FromContext(ctx).WithValues("ephemeralrunner", req.NamespacedName)
 
-	// TODO(user): your logic here
+	var ephemeralRunner arcv1alpha1.EphemeralRunner
+	if err := r.Get(ctx, req.NamespacedName, &ephemeralRunner); err != nil {
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
 
 	return ctrl.Result{}, nil
 }
@@ -55,8 +54,7 @@ func (r *EphemeralRunnerReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 // SetupWithManager sets up the controller with the Manager.
 func (r *EphemeralRunnerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		// Uncomment the following line adding a pointer to an instance of the controlled resource as an argument
-		// For().
 		Named("ephemeralrunner").
+		For(&arcv1alpha1.EphemeralRunner{}).
 		Complete(r)
 }
